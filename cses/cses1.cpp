@@ -57,5 +57,7 @@ int main ()
         n = (n % 2 == 0)? n / 2 : n * 3 + 1;
         print_ull(n);
     }
+    
+    put_char('\n');
     flush();
 }

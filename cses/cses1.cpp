@@ -1,32 +1,33 @@
 #include <unistd.h>
 #include <climits>
 
-int printer(unsigned long long n)
+char u_buf[2048];
+int pos = 0;
+
+void flush()
+{
+    if(pos) write(STDOUT_FILENO, u_buf, pos);
+    pos = 0;
+}
+
+void put_char(char c)
+{
+    if (pos == sizeof(u_buf)) flush();
+    u_buf[pos++] = c;
+}
+
+void print_ull(unsigned long long n)
 {
     char buf[24]; int i = sizeof(buf) - 1;
 
-    if (n == 0)
+    if (n == 0) buf[--i] = '0';
+    else while (n != 0)
     {
-        buf[--i] = '0';
-    }
-    else
-    {
-        if (n < 0)
-        {
-            // out of task bounds
-            return -1;
-        }
-        while (n != 0)
-        {
-            buf[--i] = '0' + (n % 10);
-            n /= 10;
-        }
+        buf[--i] = '0' + (n % 10);
+        n /= 10;
     }
 
-    int last = sizeof(buf) - 1;
-    write(STDOUT_FILENO, buf + i, last - i);
-    
-    return 1;
+    while (buf[i]) put_char(buf[i++]);
 }
 
 int main ()
@@ -48,12 +49,13 @@ int main ()
         ++i;
     }
 
-    printer(n);
+    print_ull(n);
 
     while(n != 1)
     {
-        write(STDOUT_FILENO, " ", 1);
-        n = (n % 2 == 0)? n / 2: n * 3 + 1;
-        printer(n);
+        put_char(' ');
+        n = (n % 2 == 0)? n / 2 : n * 3 + 1;
+        print_ull(n);
     }
+    flush();
 }
